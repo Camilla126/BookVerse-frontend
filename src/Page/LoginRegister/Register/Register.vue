@@ -12,7 +12,7 @@
 <input type="text" v-model="email" placeholder="Email">
 <input type="password" v-model="password" placeholder="Senha">
 
-<button>Criar conta</button>
+<button @click="register">Criar conta</button>
     <span>Já tem uma conta? <router-link to="/login">Faça login</router-link></span>
     </div>
     </div>
@@ -27,6 +27,27 @@ export default {
             email: '',
             password: ''
         };
-    },          
+    },
+// Register.vue - Script corrigido
+methods: {
+    async register() {
+    try {
+        // Observe o /api/ antes de /users
+        const response = await this.$api.post('/api/users', {
+            user: { // O Rails espera os dados dentro da chave 'user'
+                name: this.username,
+                email: this.email,
+                password: this.password
+            }
+        });
+        
+        localStorage.setItem('user_token', response.data.token);
+        alert('Conta criada com sucesso!'); // Para onde você quiser mandar o usuário
+    } catch (error) {
+        console.error(error.response);
+        alert('Erro ao cadastrar. Verifique o console!');
+    }
+}
+}
 }
 </script>
