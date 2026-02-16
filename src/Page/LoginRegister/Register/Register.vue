@@ -33,7 +33,7 @@ methods: {
     async register() {
     try {
         // Observe o /api/ antes de /users
-        const response = await this.$api.post('/api/users', {
+        const response = await this.$api.post('/api/v1/authentication/register', {
             user: { // O Rails espera os dados dentro da chave 'user'
                 name: this.username,
                 email: this.email,
