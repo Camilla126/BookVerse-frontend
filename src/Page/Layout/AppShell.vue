@@ -24,6 +24,10 @@
           <span class="me-3 fs-5">🔔</span> Notificações
         </router-link>
       </nav>
+
+      <button class="btn nav-link menu-item d-flex align-items-center text-start mt-auto" @click="logout">
+        <span class="me-3 fs-5">🚪</span> Sair
+      </button>
     </aside>
 
     <main class="main-content flex-fill overflow-auto px-4">
@@ -33,7 +37,20 @@
 </template>
 
 <script>
+import { useAuthStore } from "../../stores/auth.js";
+
 export default {
   name: "AppShell",
+  computed: {
+    authStore() {
+      return useAuthStore();
+    },
+  },
+  methods: {
+    async logout() {
+      await this.authStore.logout();
+      this.$router.push("/login");
+    },
+  },
 };
 </script>

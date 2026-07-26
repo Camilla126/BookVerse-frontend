@@ -8,23 +8,28 @@ import Library from '../Page/Library/Library.vue'
 import Write from '../Page/Write/Write.vue'
 import Profile from '../Page/Profile/Profile.vue'
 import Notifications from '../Page/Notifications/Notifications.vue'
+import { useAuthStore } from '../stores/auth.js'
 
 const routes = [
     {
         path: '/',
-        component: Login
+        component: Login,
+        meta: { guestOnly: true }
     },
     {
         path: '/login',
-        component: Login
+        component: Login,
+        meta: { guestOnly: true }
     },
     {
         path: '/register',
-        component: Register
+        component: Register,
+        meta: { guestOnly: true }
     },
     {
         path: '/',
         component: AppShell,
+        meta: { requiresAuth: true },
         children: [
             { path: 'feed', component: Feed },
             { path: 'explore', component: Explore },
@@ -39,6 +44,18 @@ const routes = [
 const router = createRouter({
     history: createWebHistory(),
     routes
+})
+
+router.beforeEach((to) => {
+    const authStore = useAuthStore()
+
+    if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+        return '/login'
+    }
+
+    if (to.meta.guestOnly && authStore.isAuthenticated) {
+        return '/feed'
+    }
 })
 
 export default router

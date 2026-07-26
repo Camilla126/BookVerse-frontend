@@ -32,6 +32,10 @@
               Digite suas credenciais para acessar sua biblioteca.
             </p>
 
+            <div v-if="errorMessage" class="alert alert-danger py-2" role="alert">
+              {{ errorMessage }}
+            </div>
+
             <input
               type="email"
               class="form-control form-control-lg mb-3 bg-light"
@@ -74,27 +78,32 @@
 </template>
 
 <script>
+import { useAuthStore } from "../../../stores/auth.js";
+
 export default {
   name: "Login",
   data() {
     return {
       email: "",
       password: "",
+      errorMessage: "",
     };
   },
+  computed: {
+    authStore() {
+      return useAuthStore();
+    },
+  },
   methods: {
-    login() {
-      this.$api
-        .post("/api/v1/authentication/login", {
-          email: this.email,
-          password: this.password,
-        })
-        .then((response) => {
-          localStorage.setItem("user_token", response.data.token);
-        })
-        .catch((error) => {
-          alert("Erro: " + error.response.data.error);
-        });
+    async login() {
+      this.errorMessage = "";
+
+      try {
+        await this.authStore.login({ email: this.email, password: this.password });
+        this.$router.push("/feed");
+      } catch (error) {
+        this.errorMessage = error.response?.data?.error || "Não foi possível entrar. Verifique suas credenciais.";
+      }
     },
   },
 };

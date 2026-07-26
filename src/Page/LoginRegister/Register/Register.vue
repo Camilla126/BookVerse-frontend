@@ -8,6 +8,9 @@
             <p>
                 Junte-se à maior comunidade de leitores do mundo.
             </p>
+            <div v-if="errorMessage" class="alert alert-danger py-2" role="alert">
+                {{ errorMessage }}
+            </div>
             <input type="text" v-model="username" placeholder="Nome de usuário">
             <input type="text" v-model="email" placeholder="Email">
             <input type="password" v-model="password" placeholder="Senha">
@@ -19,33 +22,37 @@
 </template>
 
 <script>
+import { useAuthStore } from '../../../stores/auth.js'
+
 export default {
     name: 'Register',
     data() {
         return {
             username: '',
             email: '',
-            password: ''
+            password: '',
+            errorMessage: ''
         };
     },
-    // Register.vue - Script corrigido
+    computed: {
+        authStore() {
+            return useAuthStore()
+        }
+    },
     methods: {
-        register() {
-            this.$api.post('/api/v1/authentication/register', {
-                user: {
+        async register() {
+            this.errorMessage = ''
+
+            try {
+                await this.authStore.register({
                     name: this.username,
                     email: this.email,
                     password: this.password
-                }
-            })
-                .then(response => {
-                    localStorage.setItem('user_token', response.data.token);
-                    alert('Conta criada com sucesso!');
                 })
-                .catch(error => {
-                    console.error(error.response);
-                    alert('Erro ao cadastrar. Verifique o console!');
-                });
+                this.$router.push('/feed')
+            } catch (error) {
+                this.errorMessage = error.response?.data?.errors?.join(', ') || 'Erro ao cadastrar. Tente novamente.'
+            }
         }
     }
 }
