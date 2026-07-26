@@ -1,0 +1,38 @@
+// Design tokens extraídos de design-reference/*.html (ver skill biblioverse-design)
+
+$brand-gradient: linear-gradient(135deg, #FF5F6D 0%, #FFC371 100%);
+$primary-color: #FF5F6D;
+$secondary-color: #FFC371;
+
+$bg-body: #F4F7FD;
+$bg-body-feed: #F0F2F5;
+$bg-surface: #FFFFFF;
+
+$text-main: #1A202C;
+$text-muted: #718096;
+
+$radius-lg: 24px;
+$radius-md: 16px;
+$radius-pill: 999px;
+
+$shadow-soft: 0 8px 24px rgba(149, 157, 165, 0.1);
+$shadow-glow: 0 10px 30px rgba(255, 95, 109, 0.2);
+
+$sidebar-width: 260px;
+$content-max-width: 1100px;
+
+// Também expostos como custom properties para uso direto no <style> dos componentes .vue
+:root {
+    --brand-gradient: #{$brand-gradient};
+    --primary-color: #{$primary-color};
+    --secondary-color: #{$secondary-color};
+    --bg-body: #{$bg-body};
+    --bg-surface: #{$bg-surface};
+    --text-main: #{$text-main};
+    --text-muted: #{$text-muted};
+    --radius-lg: #{$radius-lg};
+    --radius-md: #{$radius-md};
+    --shadow-soft: #{$shadow-soft};
+    --shadow-glow: #{$shadow-glow};
+    --sidebar-width: #{$sidebar-width};
+}

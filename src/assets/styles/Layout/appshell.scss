@@ -1,0 +1,38 @@
+.app-shell {
+  .sidebar {
+    width: var(--sidebar-width);
+    flex-shrink: 0;
+  }
+
+  .logo {
+    font-family: "Poppins", sans-serif;
+    background: var(--brand-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .menu-item {
+    color: var(--text-muted);
+    font-weight: 600;
+    font-family: "Poppins", sans-serif;
+    border-radius: var(--radius-md);
+    transition: all 0.3s ease;
+
+    &:hover {
+      background-color: #fff5f5;
+      color: var(--primary-color);
+      transform: translateX(5px);
+    }
+
+    &.active {
+      background: var(--brand-gradient);
+      color: white;
+      box-shadow: 0 10px 20px rgba(255, 95, 109, 0.3);
+    }
+  }
+
+  .main-content {
+    background-color: var(--bg-body);
+  }
+}

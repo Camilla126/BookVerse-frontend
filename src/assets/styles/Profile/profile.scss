@@ -1,0 +1,67 @@
+.profile-page {
+  .profile-cover {
+    height: 250px;
+    width: 100%;
+    background-size: cover;
+    background-position: center;
+  }
+
+  .profile-info-bar {
+    margin-top: -60px;
+  }
+
+  .profile-avatar-lg {
+    width: 160px;
+    height: 160px;
+    border: 6px solid white;
+    object-fit: cover;
+    background: #ddd;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  .badge-slot {
+    cursor: help;
+    transition: 0.2s;
+
+    &:hover {
+      background: #FFF5F5 !important;
+      transform: scale(1.1);
+    }
+  }
+
+  .nav-tabs .nav-link {
+    color: #718096;
+    font-weight: 600;
+    border: none;
+    border-bottom: 3px solid transparent;
+
+    &.active {
+      color: var(--primary-color);
+      border-color: var(--primary-color);
+      background: transparent;
+    }
+  }
+
+  .my-work-card {
+    cursor: pointer;
+    transition: 0.3s;
+
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1) !important;
+    }
+  }
+
+  .work-cover {
+    height: 180px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+  }
+
+  .new-work-card {
+    border-color: #CBD5E1 !important;
+    border-style: dashed !important;
+    box-shadow: none !important;
+  }
+}

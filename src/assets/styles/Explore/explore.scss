@@ -1,0 +1,99 @@
+.explore-page {
+  .explore-hero {
+    background: white;
+  }
+
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.6;
+    z-index: 0;
+  }
+  .blob-1 { width: 300px; height: 300px; background: #FFC371; top: -100px; left: -100px; }
+  .blob-2 { width: 400px; height: 400px; background: #FF5F6D; bottom: -150px; right: -100px; opacity: 0.4; }
+  .blob-3 { width: 200px; height: 200px; background: #8E2DE2; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.2; }
+
+  .search-wrapper {
+    transition: 0.3s;
+    &:focus-within {
+      transform: scale(1.02);
+    }
+  }
+
+  .genre-card {
+    height: 120px;
+    cursor: pointer;
+    transition: 0.3s;
+
+    &:hover {
+      transform: translateY(-5px) scale(1.03);
+    }
+  }
+
+  .g-romance { background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%); }
+  .g-scifi { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+  .g-horror { background: linear-gradient(135deg, #434343 0%, #000000 100%); }
+  .g-fantasy { background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); }
+  .g-thriller { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+
+  .rank-item {
+    min-width: 280px;
+    transition: 0.3s;
+    cursor: pointer;
+
+    &:hover {
+      transform: translateY(-5px);
+    }
+  }
+
+  .rank-number {
+    position: absolute;
+    left: -15px;
+    bottom: 10px;
+    font-size: 8rem;
+    font-weight: 900;
+    line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 4px rgba(0, 0, 0, 0.05);
+    font-family: "Poppins", sans-serif;
+    z-index: 0;
+  }
+
+  .rank-card {
+    margin-left: 40px;
+    z-index: 1;
+  }
+
+  .rank-cover {
+    width: 70px;
+    height: 100px;
+    border-radius: 8px;
+    background-size: cover;
+  }
+
+  .author-bubble {
+    min-width: 160px;
+    cursor: pointer;
+    transition: 0.3s;
+    border: 1px solid transparent !important;
+
+    &:hover {
+      border-color: var(--primary-color) !important;
+      transform: translateY(-5px);
+    }
+  }
+
+  .ab-img {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border: 3px solid #f0f0f0;
+  }
+
+  .ab-btn:hover {
+    background: var(--text-main) !important;
+    color: white !important;
+    border-color: var(--text-main) !important;
+  }
+}
