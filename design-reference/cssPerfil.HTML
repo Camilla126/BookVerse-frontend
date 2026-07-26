@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BiblioVerse - Perfil Ultimate</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- BASE (Mantendo Vibe Edition) --- */
+        :root {
+            --brand-gradient: linear-gradient(135deg, #FF5F6D 0%, #FFC371 100%);
+            --primary-color: #FF5F6D;
+            --bg-body: #F4F7FD; 
+            --bg-surface: #FFFFFF;
+            --text-main: #1A202C; 
+            --text-muted: #718096;
+            --radius-lg: 24px;
+            --shadow-soft: 0 8px 24px rgba(149, 157, 165, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: var(--bg-body); color: var(--text-main); height: 100vh; font-family: 'Inter', sans-serif; overflow: hidden; }
+        h1, h2, h3, h4 { font-family: 'Poppins', sans-serif; letter-spacing: -0.5px; }
+        ::-webkit-scrollbar { width: 0px; }
+
+        .app-container { display: grid; grid-template-columns: 260px 1fr; height: 100vh; }
+
+        /* SIDEBAR */
+        .sidebar { background-color: var(--bg-surface); padding: 40px 25px; display: flex; flex-direction: column; box-shadow: 5px 0 15px rgba(0,0,0,0.02); z-index: 10; }
+        .logo { font-family: 'Poppins', sans-serif; font-size: 1.6rem; font-weight: 800; background: var(--brand-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; margin-bottom: 50px; display: flex; align-items: center; gap: 8px; }
+        .menu-item { display: flex; align-items: center; padding: 14px 20px; text-decoration: none; color: var(--text-muted); font-weight: 600; border-radius: 16px; margin-bottom: 8px; transition: all 0.3s ease; cursor: pointer; font-family: 'Poppins', sans-serif; }
+        .menu-item:hover { background-color: #FFF5F5; color: var(--primary-color); transform: translateX(5px); }
+        .menu-item.active { background: var(--brand-gradient); color: white; box-shadow: 0 10px 20px rgba(255, 95, 109, 0.3); }
+        .menu-item span { margin-right: 15px; font-size: 1.3rem; }
+
+        /* CONTENT */
+        .main-content { overflow-y: auto; position: relative; height: 100vh; padding: 0 40px; }
+        .page-section { display: none; padding: 40px 0; max-width: 1100px; margin: 0 auto; animation: slideUp 0.4s ease; }
+        .page-section.active { display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- CSS NOVO: PERFIL ULTIMATE --- */
+
+        /* 1. Capa e Cabeçalho */
+        .profile-header-card {
+            background: white; border-radius: 24px; overflow: hidden;
+            box-shadow: var(--shadow-soft); margin-bottom: 30px; position: relative;
+        }
+        
+        .profile-cover {
+            height: 250px; width: 100%;
+            background-image: url('https://images.unsplash.com/photo-1507842217153-e21f2010dc6f?auto=format&fit=crop&q=80&w=1200');
+            background-size: cover; background-position: center;
+        }
+
+        .profile-info-bar {
+            padding: 0 40px 30px 40px;
+            display: flex; justify-content: space-between; align-items: flex-end;
+            margin-top: -60px; /* Puxa para cima da capa */
+        }
+
+        .profile-identity { display: flex; align-items: flex-end; gap: 25px; }
+        
+        .profile-avatar-lg {
+            width: 160px; height: 160px; border-radius: 50%;
+            border: 6px solid white;
+            object-fit: cover; background: #ddd;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .profile-names h1 { font-size: 2rem; margin-bottom: 5px; color: #1A202C; display: flex; align-items: center; gap: 10px; }
+        .verified-badge { font-size: 1.2rem; color: #3B82F6; } /* Selo azul */
+        .profile-handle { color: #718096; font-size: 1.1rem; }
+
+        .profile-actions { display: flex; gap: 15px; margin-bottom: 10px; }
+        .btn-edit { 
+            padding: 10px 20px; border: 2px solid #E2E8F0; background: white; 
+            border-radius: 30px; font-weight: 700; color: #4A5568; cursor: pointer; transition: 0.2s; 
+        }
+        .btn-edit:hover { background: #F7FAFC; border-color: #CBD5E0; }
+        
+        .btn-share {
+            padding: 10px 20px; background: var(--text-main); color: white; border: none;
+            border-radius: 30px; font-weight: 700; cursor: pointer; transition: 0.2s;
+        }
+        .btn-share:hover { background: var(--primary-color); }
+
+        /* 2. Layout de Colunas (Grid) */
+        .profile-grid { display: grid; grid-template-columns: 300px 1fr; gap: 30px; }
+
+        /* Coluna Esquerda (Intro) */
+        .profile-sidebar-col { display: flex; flex-direction: column; gap: 30px; }
+        
+        .info-box { background: white; padding: 25px; border-radius: 20px; box-shadow: var(--shadow-soft); }
+        .info-title { font-size: 0.9rem; font-weight: 800; text-transform: uppercase; color: #A0AEC0; margin-bottom: 15px; letter-spacing: 1px; }
+        
+        .bio-text { color: #4A5568; line-height: 1.6; margin-bottom: 20px; }
+        .meta-item { display: flex; align-items: center; gap: 10px; color: #718096; margin-bottom: 10px; font-size: 0.95rem; }
+        
+        /* Stats (Seguidores) */
+        .stats-row { display: flex; justify-content: space-between; padding: 15px 0; border-top: 1px solid #eee; border-bottom: 1px solid #eee; margin-bottom: 20px; }
+        .stat-item { text-align: center; cursor: pointer; }
+        .stat-val { display: block; font-weight: 800; font-size: 1.2rem; color: var(--text-main); }
+        .stat-lbl { font-size: 0.8rem; color: #A0AEC0; }
+
+        /* Badges Grid */
+        .badges-mini-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .badge-slot { 
+            background: #F8FAFC; border-radius: 12px; padding: 10px; 
+            text-align: center; font-size: 1.5rem; transition: 0.2s; cursor: help;
+        }
+        .badge-slot:hover { background: #FFF5F5; transform: scale(1.1); }
+
+        /* Coluna Direita (Conteúdo) */
+        .profile-tabs { display: flex; gap: 30px; border-bottom: 2px solid #E2E8F0; margin-bottom: 30px; }
+        .p-tab { 
+            padding-bottom: 15px; font-size: 1.1rem; font-weight: 600; color: #718096; 
+            cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: 0.3s;
+        }
+        .p-tab.active { color: var(--primary-color); border-color: var(--primary-color); }
+
+        /* Grid de Obras */
+        .works-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 25px; }
+        
+        .my-work-card { 
+            background: white; border-radius: 16px; overflow: hidden; 
+            box-shadow: var(--shadow-soft); transition: 0.3s; cursor: pointer; 
+        }
+        .my-work-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
+        
+        .work-cover { height: 180px; background-size: cover; background-position: center; position: relative; }
+        .work-status { 
+            position: absolute; top: 10px; right: 10px; 
+            background: rgba(0,0,0,0.7); color: white; padding: 4px 10px; 
+            border-radius: 12px; font-size: 0.7rem; font-weight: bold; 
+        }
+        
+        .work-info { padding: 15px; }
+        .work-title { font-weight: 700; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .work-stats { display: flex; gap: 15px; color: #718096; font-size: 0.8rem; margin-top: 10px; }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="logo"><span>📚</span> BiblioVerse</div>
+            <nav>
+                <div class="menu-item" onclick="nav('feed', this)"><span>🏠</span> Feed Social</div>
+                <div class="menu-item" onclick="nav('explore', this)"><span>🔍</span> Explorar</div>
+                <div class="menu-item" onclick="nav('library', this)"><span>📚</span> Biblioteca</div>
+                <div class="menu-item" onclick="nav('write', this)"><span>✒️</span> Escrever</div>
+                <div class="menu-item active" onclick="nav('profile', this)"><span>👤</span> Perfil</div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            
+            <div id="profile" class="page-section active">
+                
+                <div class="profile-header-card">
+                    <div class="profile-cover">
+                        </div>
+                    <div class="profile-info-bar">
+                        <div class="profile-identity">
+                            <img src="https://i.pravatar.cc/300?img=12" class="profile-avatar-lg">
+                            <div style="margin-bottom: 10px;">
+                                <h1>Alexandre Lemos <span class="verified-badge" title="Autor Verificado">✔</span></h1>
+                                <p class="profile-handle">@alex_lemos • São Paulo, BR</p>
+                            </div>
+                        </div>
+                        <div class="profile-actions">
+                            <button class="btn-edit">Editar Perfil</button>
+                            <button class="btn-share">Compartilhar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-grid">
+                    
+                    <div class="profile-sidebar-col">
+                        
+                        <div class="info-box">
+                            <div class="info-title">Sobre</div>
+                            <p class="bio-text">Escritor de Fantasia Sombria e Sci-Fi. Amo café, dias chuvosos e criar mundos onde a magia tem um preço alto. 🖋️✨</p>
+                            
+                            <div class="meta-item"><span>🔗</span> <a href="#" style="color:var(--primary-color); text-decoration:none;">alexlemos.com</a></div>
+                            <div class="meta-item"><span>🎂</span> Entrou em Jan 2024</div>
+
+                            <div class="stats-row">
+                                <div class="stat-item">
+                                    <span class="stat-val">12.5k</span>
+                                    <span class="stat-lbl">Seguidores</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-val">450</span>
+                                    <span class="stat-lbl">Seguindo</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-val">82</span>
+                                    <span class="stat-lbl">Obras</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-box">
+                            <div class="info-title">Conquistas (6)</div>
+                            <div class="badges-mini-grid">
+                                <div class="badge-slot" title="Autor Best-Seller">🏆</div>
+                                <div class="badge-slot" title="1 Ano de Casa">🎂</div>
+                                <div class="badge-slot" title="Leitor Voraz">📚</div>
+                                <div class="badge-slot" title="Maratonista">🔥</div>
+                                <div class="badge-slot" title="Popular">⭐</div>
+                                <div class="badge-slot" style="opacity:0.3">🔒</div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div>
+                        
+                        <div class="profile-tabs">
+                            <div class="p-tab active">Minhas Histórias</div>
+                            <div class="p-tab">Listas de Leitura</div>
+                            <div class="p-tab">Atividade</div>
+                            <div class="p-tab">Sobre</div>
+                        </div>
+
+                        <div class="works-grid">
+                            
+                            <div class="my-work-card">
+                                <div class="work-cover" style="background-image: url('https://images.unsplash.com/photo-1516414447581-b21d006433ae?auto=format&fit=crop&q=80&w=400');">
+                                    <div class="work-status" style="background:#F59E0B;">EM ANDAMENTO</div>
+                                </div>
+                                <div class="work-info">
+                                    <h4 class="work-title">A Sombra do Passado</h4>
+                                    <p style="font-size:0.85rem; color:#666; line-height:1.4;">Um mistério antigo desperta em uma cidade esquecida...</p>
+                                    <div class="work-stats">
+                                        <span>👁️ 12k</span>
+                                        <span>⭐ 4.8</span>
+                                        <span>📄 12 Caps</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="my-work-card">
+                                <div class="work-cover" style="background-image: url('https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&q=80&w=400');">
+                                    <div class="work-status" style="background:#10B981;">CONCLUÍDO</div>
+                                </div>
+                                <div class="work-info">
+                                    <h4 class="work-title">Cyber Punk 2099</h4>
+                                    <p style="font-size:0.85rem; color:#666; line-height:1.4;">Neon, chuva e traição no submundo digital.</p>
+                                    <div class="work-stats">
+                                        <span>👁️ 45k</span>
+                                        <span>⭐ 4.9</span>
+                                        <span>📄 34 Caps</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="my-work-card">
+                                <div class="work-cover" style="background-image: url('https://images.unsplash.com/photo-1629198688000-71f23e745b6e?auto=format&fit=crop&q=80&w=400');">
+                                    <div class="work-status" style="background:#10B981;">CONCLUÍDO</div>
+                                </div>
+                                <div class="work-info">
+                                    <h4 class="work-title">Crônicas de Areia</h4>
+                                    <p style="font-size:0.85rem; color:#666; line-height:1.4;">Uma jornada épica pelo deserto infinito.</p>
+                                    <div class="work-stats">
+                                        <span>👁️ 8.2k</span>
+                                        <span>⭐ 4.5</span>
+                                        <span>📄 20 Caps</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                             <div class="my-work-card" style="border: 2px dashed #CBD5E1; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#A0AEC0; box-shadow:none;">
+                                <div style="font-size:3rem; margin-bottom:10px;">+</div>
+                                <span style="font-weight:600;">Nova História</span>
+                             </div>
+
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <div id="feed" class="page-section" style="padding:40px;"><h2>Feed</h2></div>
+            <div id="explore" class="page-section" style="padding:40px;"><h2>Explorar</h2></div>
+            <div id="library" class="page-section" style="padding:40px;"><h2>Biblioteca</h2></div>
+            <div id="write" class="page-section" style="padding:40px;"><h2>Escrever</h2></div>
+
+        </main>
+    </div>
+
+    <script>
+        function nav(pageId, btn) {
+            document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        // Simples script para as abas do perfil
+        const tabs = document.querySelectorAll('.p-tab');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

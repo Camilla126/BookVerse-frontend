@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BiblioVerse - Biblioteca Com Adição Manual</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- VARIÁVEIS VISUAIS --- */
+        :root {
+            --brand-gradient: linear-gradient(135deg, #FF5F6D 0%, #FFC371 100%);
+            --primary-color: #FF5F6D;
+            --bg-body: #F4F7FD; 
+            --bg-surface: #FFFFFF;
+            --text-main: #1A202C; 
+            --text-muted: #718096;
+            --shadow-soft: 0 8px 24px rgba(149, 157, 165, 0.1);
+            --shadow-card: 0 10px 20px rgba(0,0,0,0.05);
+            --radius-lg: 24px;
+            --radius-md: 16px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: var(--bg-body); color: var(--text-main); height: 100vh; font-family: 'Inter', sans-serif; overflow: hidden; }
+        h1, h2, h3, h4 { font-family: 'Poppins', sans-serif; letter-spacing: -0.5px; }
+        ::-webkit-scrollbar { width: 0px; }
+
+        .app-container { display: grid; grid-template-columns: 260px 1fr; height: 100vh; }
+
+        /* --- SIDEBAR --- */
+        .sidebar { background-color: var(--bg-surface); padding: 40px 25px; display: flex; flex-direction: column; box-shadow: 5px 0 15px rgba(0,0,0,0.02); z-index: 10; }
+        .logo { font-family: 'Poppins', sans-serif; font-size: 1.6rem; font-weight: 800; background: var(--brand-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; margin-bottom: 50px; display: flex; align-items: center; gap: 8px; }
+        .menu-item { display: flex; align-items: center; padding: 14px 20px; text-decoration: none; color: var(--text-muted); font-weight: 600; border-radius: var(--radius-md); margin-bottom: 8px; transition: all 0.3s ease; cursor: pointer; font-family: 'Poppins', sans-serif; }
+        .menu-item:hover { background-color: #FFF5F5; color: var(--primary-color); transform: translateX(5px); }
+        .menu-item.active { background: var(--brand-gradient); color: white; box-shadow: 0 10px 20px rgba(255, 95, 109, 0.3); }
+        .menu-item span { margin-right: 15px; font-size: 1.3rem; }
+
+        /* --- CONTEÚDO --- */
+        .main-content { overflow-y: auto; position: relative; height: 100vh; padding: 0 40px; }
+        .page-section { display: none; padding: 40px 0; max-width: 1100px; margin: 0 auto; animation: slideUp 0.5s cubic-bezier(0.25, 0.8, 0.25, 1); }
+        .page-section.active { display: block; } 
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- CSS BIBLIOTECA --- */
+        .reading-hero { display: flex; background: white; border-radius: var(--radius-lg); padding: 30px; box-shadow: var(--shadow-soft); margin-bottom: 40px; position: relative; overflow: hidden; gap: 40px; }
+        .hero-bg-blur { position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background-image: url('https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=400'); background-size: cover; filter: blur(60px); opacity: 0.15; z-index: 0; }
+        .hero-cover-container { z-index: 1; position: relative; }
+        .hero-book-cover { width: 160px; height: 240px; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); background-image: url('https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=400'); background-size: cover; background-position: center; transition: 0.3s; }
+        .hero-info { z-index: 1; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+        .status-badge { display: inline-flex; align-items: center; gap: 5px; background: #FFF1F2; color: var(--primary-color); padding: 5px 12px; border-radius: 20px; font-weight: 700; font-size: 0.8rem; width: fit-content; margin-bottom: 15px; }
+        .pulse-dot { width: 8px; height: 8px; background: var(--primary-color); border-radius: 50%; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 95, 109, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(255, 95, 109, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 95, 109, 0); } }
+        .progress-track-lg { width: 100%; height: 10px; background: #EDF2F7; border-radius: 10px; overflow: hidden; margin-bottom: 10px; margin-top: 25px;}
+        .progress-fill-lg { height: 100%; width: 75%; background: var(--brand-gradient); border-radius: 10px; }
+        .hero-actions { display: flex; gap: 15px; margin-top: 20px; }
+        .btn-primary { background: var(--text-main); color: white; border: none; padding: 12px 25px; border-radius: 30px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; }
+        .btn-primary:hover { background: var(--primary-color); transform: translateY(-2px); }
+        .btn-secondary { background: white; border: 2px solid #E2E8F0; color: var(--text-muted); padding: 12px 20px; border-radius: 30px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+
+        /* Toolbar */
+        .lib-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .filter-pills { display: flex; gap: 10px; background: white; padding: 5px; border-radius: 30px; box-shadow: var(--shadow-card); }
+        .filter-pill { padding: 8px 20px; border-radius: 25px; cursor: pointer; font-weight: 600; color: var(--text-muted); transition: 0.2s; }
+        .filter-pill.active { background: var(--text-main); color: white; }
+        
+        /* Botão Adicionar Manual (Novo Estilo) */
+        .btn-add-manual {
+            background: var(--brand-gradient);
+            color: white; border: none; padding: 10px 20px;
+            border-radius: 30px; font-weight: 700; cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255, 95, 109, 0.3);
+            transition: 0.3s; margin-left: 15px; display: flex; align-items: center; gap: 8px;
+        }
+        .btn-add-manual:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(255, 95, 109, 0.4); }
+
+        /* Grid */
+        .shelf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 30px; }
+        .shelf-book { background: white; border-radius: 16px; padding: 15px; text-align: left; transition: 0.3s; position: relative; border: 1px solid transparent; }
+        .shelf-book:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); }
+        .shelf-cover { width: 100%; height: 260px; border-radius: 10px; background-size: cover; background-position: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-bottom: 15px; }
+        .progress-mini { height: 4px; background: #eee; width: 100%; border-radius: 2px; margin-top: 10px; }
+        .progress-mini-fill { height: 100%; background: #10B981; border-radius: 2px; }
+
+        /* --- MODAL DE ADIÇÃO (NOVO) --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+            display: none; align-items: center; justify-content: center;
+            z-index: 1000; animation: fadeIn 0.3s ease;
+        }
+        .modal-overlay.open { display: flex; }
+
+        .modal-box {
+            background: white; width: 100%; max-width: 500px;
+            padding: 30px; border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            animation: slideUpModal 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes slideUpModal { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .close-modal { cursor: pointer; font-size: 1.5rem; color: #aaa; transition: 0.2s; }
+        .close-modal:hover { color: var(--primary-color); }
+
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; font-size: 0.9rem; font-weight: 600; color: #444; margin-bottom: 8px; }
+        .form-input { 
+            width: 100%; padding: 12px; border-radius: 10px; 
+            border: 1px solid #E2E8F0; outline: none; font-size: 1rem; transition: 0.3s;
+        }
+        .form-input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(255, 95, 109, 0.1); }
+        
+        .form-row { display: flex; gap: 15px; }
+        
+        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 30px; }
+        .btn-cancel { background: #f5f5f5; border: none; padding: 10px 20px; border-radius: 20px; font-weight: 600; cursor: pointer; color: #666; }
+        .btn-save { background: var(--brand-gradient); color: white; border: none; padding: 10px 25px; border-radius: 20px; font-weight: 600; cursor: pointer; box-shadow: 0 5px 15px rgba(255, 95, 109, 0.3); }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <aside class="sidebar">
+            <div class="logo"><span>📚</span> BiblioVerse</div>
+            <nav>
+                <div class="menu-item" onclick="nav('feed', this)"><span>🏠</span> Feed Social</div>
+                <div class="menu-item active" onclick="nav('library', this)"><span>📚</span> Biblioteca</div>
+                <div class="menu-item" onclick="nav('write', this)"><span>✒️</span> Escrever</div>
+                <div class="menu-item" onclick="nav('profile', this)"><span>👤</span> Perfil</div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            
+            <div id="library" class="page-section active">
+                <h2 style="margin-bottom: 20px;">Minha Estante</h2>
+
+                <div class="reading-hero">
+                    <div class="hero-bg-blur"></div>
+                    <div class="hero-cover-container">
+                        <div class="hero-book-cover"></div>
+                    </div>
+                    <div class="hero-info">
+                        <div class="status-badge"><div class="pulse-dot"></div> LENDO AGORA</div>
+                        <h1 style="font-size: 2rem; margin-bottom: 5px;">O Leitor</h1>
+                        <p style="color: #666; font-size: 1.1rem;">Bernhard Schlink</p>
+                        <div class="progress-track-lg"><div class="progress-fill-lg"></div></div>
+                        <div style="display:flex; justify-content:space-between; font-weight:600; color:#4A5568;"><span>75% Concluído</span><span>140 / 210 Páginas</span></div>
+                        <div class="hero-actions">
+                            <button class="btn-primary">📝 Atualizar</button>
+                            <button class="btn-secondary">Detalhes</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lib-toolbar">
+                    <div class="filter-pills">
+                        <div class="filter-pill active">Todos</div>
+                        <div class="filter-pill">Quero Ler</div>
+                        <div class="filter-pill">Lidos</div>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center;">
+                        <input type="text" placeholder="Buscar na estante..." style="padding: 10px 15px; border-radius: 20px; border: 1px solid #E2E8F0; outline:none;">
+                        
+                        <button class="btn-add-manual" onclick="openModal()">
+                            <span style="font-size:1.2rem;">+</span> Novo Livro
+                        </button>
+                    </div>
+                </div>
+
+                <div class="shelf-grid" id="bookShelf">
+                    
+                    <div class="shelf-book">
+                        <div class="shelf-menu-btn">⋮</div>
+                        <div class="shelf-cover" style="background-image: url('https://images.unsplash.com/photo-1629198688000-71f23e745b6e?auto=format&fit=crop&q=80&w=400');"></div>
+                        <h4 style="font-size:1rem; margin-bottom:4px;">Duna</h4>
+                        <p style="color:#888; font-size:0.85rem;">Frank Herbert</p>
+                        <div class="progress-mini"><div class="progress-mini-fill" style="width: 20%;"></div></div>
+                        <small style="color:#10B981; font-size:0.75rem;">20% Lido</small>
+                    </div>
+
+                    <div class="shelf-book">
+                        <div class="shelf-menu-btn">⋮</div>
+                        <div class="shelf-cover" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display:flex; align-items:center; justify-content:center; color:white; font-weight:bold;">Clean Code</div>
+                        <h4 style="font-size:1rem; margin-bottom:4px;">Clean Code</h4>
+                        <p style="color:#888; font-size:0.85rem;">Robert C. Martin</p>
+                        <div class="progress-mini"><div class="progress-mini-fill" style="width: 45%;"></div></div>
+                        <small style="color:#10B981; font-size:0.75rem;">45% Lido</small>
+                    </div>
+
+                </div>
+            </div>
+
+            <div id="feed" class="page-section"><h2>Feed</h2></div>
+            <div id="write" class="page-section"><h2>Escrever</h2></div>
+            <div id="profile" class="page-section"><h2>Perfil</h2></div>
+
+        </main>
+    </div>
+
+    <div class="modal-overlay" id="addBookModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Adicionar Livro Manualmente</h3>
+                <span class="close-modal" onclick="closeModal()">×</span>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Título do Livro</label>
+                <input type="text" class="form-input" id="newTitle" placeholder="Ex: O Senhor dos Anéis">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Autor</label>
+                <input type="text" class="form-input" id="newAuthor" placeholder="Ex: J.R.R. Tolkien">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group" style="flex:1;">
+                    <label class="form-label">Páginas</label>
+                    <input type="number" class="form-input" placeholder="0">
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label class="form-label">Status</label>
+                    <select class="form-input">
+                        <option>Quero Ler</option>
+                        <option>Lendo</option>
+                        <option>Lido</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">URL da Capa (Opcional)</label>
+                <input type="text" class="form-input" id="newCover" placeholder="https://...">
+                <small style="color:#aaa;">Deixe em branco para capa automática.</small>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+                <button class="btn-save" onclick="addNewBook()">Salvar na Estante</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function nav(pageId, btn) {
+            document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        // LÓGICA DO MODAL
+        const modal = document.getElementById('addBookModal');
+
+        function openModal() {
+            modal.classList.add('open');
+        }
+
+        function closeModal() {
+            modal.classList.remove('open');
+        }
+
+        // LÓGICA PARA ADICIONAR O LIVRO NA TELA (Simulação)
+        function addNewBook() {
+            const title = document.getElementById('newTitle').value;
+            const author = document.getElementById('newAuthor').value;
+            const coverUrl = document.getElementById('newCover').value;
+
+            if(!title) { alert("Digite o título!"); return; }
+
+            // Cria o HTML do novo card
+            const grid = document.getElementById('bookShelf');
+            
+            // Define o estilo da capa (Imagem ou Gradiente se vazio)
+            let coverStyle = '';
+            if(coverUrl) {
+                coverStyle = `background-image: url('${coverUrl}');`;
+            } else {
+                coverStyle = `background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%); display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:1.2rem;`;
+            }
+
+            const newCardHTML = `
+                <div class="shelf-book" style="animation: slideUp 0.5s ease;">
+                    <div class="shelf-menu-btn">⋮</div>
+                    <div class="shelf-cover" style="${coverStyle}">
+                        ${coverUrl ? '' : title} 
+                    </div>
+                    <h4 style="font-size:1rem; margin-bottom:4px;">${title}</h4>
+                    <p style="color:#888; font-size:0.85rem;">${author}</p>
+                    <div style="margin-top:10px; font-size:0.75rem; background:#F7FAFC; padding:4px; display:inline-block; border-radius:4px; color:#718096;">📅 Quero Ler</div>
+                </div>
+            `;
+
+            // Adiciona ao grid
+            grid.insertAdjacentHTML('beforeend', newCardHTML);
+            
+            // Limpa e fecha
+            document.getElementById('newTitle').value = '';
+            document.getElementById('newAuthor').value = '';
+            document.getElementById('newCover').value = '';
+            closeModal();
+        }
+    </script>
+</body>
+</html>

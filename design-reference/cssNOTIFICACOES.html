@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BiblioVerse - Notificações Ultimate</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CONFIGURAÇÕES VISUAIS GERAIS --- */
+        :root {
+            --brand-gradient: linear-gradient(135deg, #FF5F6D 0%, #FFC371 100%);
+            --primary-color: #FF5F6D;
+            --bg-body: #F4F7FD; 
+            --bg-surface: #FFFFFF;
+            --text-main: #1A202C; 
+            --text-muted: #718096;
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --shadow-soft: 0 8px 24px rgba(149, 157, 165, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: var(--bg-body); color: var(--text-main); height: 100vh; font-family: 'Inter', sans-serif; overflow: hidden; }
+        h1, h2, h3, h4 { font-family: 'Poppins', sans-serif; letter-spacing: -0.5px; }
+        ::-webkit-scrollbar { width: 0px; }
+
+        .app-container { display: grid; grid-template-columns: 260px 1fr; height: 100vh; }
+
+        /* --- SIDEBAR --- */
+        .sidebar { background-color: var(--bg-surface); padding: 40px 25px; display: flex; flex-direction: column; box-shadow: 5px 0 15px rgba(0,0,0,0.02); z-index: 10; }
+        .logo { font-family: 'Poppins', sans-serif; font-size: 1.6rem; font-weight: 800; background: var(--brand-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; margin-bottom: 50px; display: flex; align-items: center; gap: 8px; }
+        .menu-item { display: flex; align-items: center; padding: 14px 20px; text-decoration: none; color: var(--text-muted); font-weight: 600; border-radius: var(--radius-md); margin-bottom: 8px; transition: all 0.3s ease; cursor: pointer; font-family: 'Poppins', sans-serif; }
+        .menu-item:hover { background-color: #FFF5F5; color: var(--primary-color); transform: translateX(5px); }
+        .menu-item.active { background: var(--brand-gradient); color: white; box-shadow: 0 10px 20px rgba(255, 95, 109, 0.3); }
+        .menu-item span { margin-right: 15px; font-size: 1.3rem; }
+        .notification-badge { background: white; color: var(--primary-color); font-size: 0.75rem; font-weight: 800; padding: 3px 10px; border-radius: 20px; margin-left: auto; }
+
+        /* --- CONTEÚDO --- */
+        .main-content { overflow-y: auto; position: relative; height: 100vh; padding: 0 40px; }
+        .page-section { display: none; padding: 40px 0; max-width: 800px; margin: 0 auto; animation: slideUp 0.5s cubic-bezier(0.25, 0.8, 0.25, 1); }
+        .page-section.active { display: block; } 
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- CSS EXCLUSIVO: NOTIFICAÇÕES ULTIMATE --- */
+
+        .notif-header-area { margin-bottom: 30px; }
+        
+        /* Abas de Filtro */
+        .notif-filters { display: flex; gap: 15px; margin-top: 15px; }
+        .n-filter { padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: 0.2s; border: 1px solid transparent; }
+        .n-filter.active { background: var(--text-main); color: white; }
+        .n-filter.inactive { background: white; color: var(--text-muted); border-color: #eee; }
+        .n-filter.inactive:hover { border-color: var(--primary-color); color: var(--primary-color); }
+
+        /* Grupos de Tempo */
+        .time-group-label { font-size: 0.95rem; font-weight: 700; color: var(--text-muted); margin: 30px 0 15px 0; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Card de Notificação */
+        .notif-card {
+            background: white; border-radius: 20px; padding: 15px 20px;
+            display: flex; align-items: center; gap: 15px;
+            margin-bottom: 12px; transition: 0.2s;
+            position: relative; border: 1px solid transparent;
+        }
+        
+        /* Estado: Não lido */
+        .notif-card.unread { 
+            background: #FFF5F7; /* Rosa muito sutil */
+            border-color: #FFD1D9;
+        }
+        .notif-card.unread::before {
+            content: ''; position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+            width: 6px; height: 6px; background: var(--primary-color); border-radius: 50%;
+        }
+
+        .notif-card:hover { transform: scale(1.01); box-shadow: 0 5px 15px rgba(0,0,0,0.05); z-index: 2; }
+
+        /* Avatar com Badge (Ícone sobreposto) */
+        .avatar-wrapper { position: relative; flex-shrink: 0; }
+        .n-avatar { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; border: 2px solid white; }
+        
+        .n-badge {
+            position: absolute; bottom: -2px; right: -2px;
+            width: 24px; height: 24px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.8rem; border: 2px solid white; color: white;
+        }
+        .bg-like { background: linear-gradient(135deg, #FF5F6D 0%, #FFC371 100%); }
+        .bg-comment { background: linear-gradient(135deg, #36D1DC 0%, #5B86E5 100%); }
+        .bg-follow { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+        .bg-system { background: linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%); }
+
+        /* Texto */
+        .notif-text { flex: 1; font-size: 0.95rem; line-height: 1.4; color: #444; }
+        .notif-text strong { color: var(--text-main); font-weight: 700; }
+        .notif-time { display: block; font-size: 0.8rem; color: #999; margin-top: 3px; }
+
+        /* Contexto (Lado direito) */
+        .notif-context { flex-shrink: 0; }
+        
+        /* Capa de livro miniatura */
+        .context-book { width: 45px; height: 65px; border-radius: 6px; background-size: cover; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        
+        /* Botão Seguir */
+        .btn-follow-sm { 
+            background: var(--text-main); color: white; border: none; 
+            padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 0.8rem; cursor: pointer; transition: 0.2s;
+        }
+        .btn-follow-sm:hover { background: var(--primary-color); }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <aside class="sidebar">
+            <div class="logo"><span>📚</span> BiblioVerse</div>
+            <nav>
+                <div class="menu-item" onclick="nav('feed', this)"><span>🏠</span> Feed Social</div>
+                <div class="menu-item" onclick="nav('explore', this)"><span>🔍</span> Explorar</div>
+                <div class="menu-item active" onclick="nav('notifications', this)">
+                    <span>🔔</span> Notificações 
+                    <div class="notification-badge">4</div>
+                </div>
+                <div class="menu-item" onclick="nav('library', this)"><span>📚</span> Biblioteca</div>
+                <div class="menu-item" onclick="nav('write', this)"><span>✒️</span> Escrever</div>
+                <div class="menu-item" onclick="nav('profile', this)"><span>👤</span> Perfil</div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            
+            <div id="notifications" class="page-section active">
+                
+                <div class="notif-header-area">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h2>Atividades Recentes</h2>
+                        <span style="color:var(--primary-color); font-weight:700; font-size:0.9rem; cursor:pointer;">Marcar tudo como lido</span>
+                    </div>
+
+                    <div class="notif-filters">
+                        <div class="n-filter active">Todas</div>
+                        <div class="n-filter inactive">Menções</div>
+                        <div class="n-filter inactive">Alertas</div>
+                    </div>
+                </div>
+
+                <div class="time-group-label">Novo</div>
+
+                <div class="notif-card unread">
+                    <div class="avatar-wrapper">
+                        <img src="https://i.pravatar.cc/150?img=12" class="n-avatar">
+                        <div class="n-badge bg-like">❤️</div>
+                    </div>
+                    <div class="notif-text">
+                        <strong>Danilo M.</strong> curtiu sua resenha sobre <strong>O Código da Vinci</strong>.
+                        <span class="notif-time">Há 5 minutos</span>
+                    </div>
+                    <div class="notif-context">
+                        <div class="context-book" style="background-image: url('https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80&w=200');"></div>
+                    </div>
+                </div>
+
+                <div class="notif-card unread">
+                    <div class="avatar-wrapper">
+                        <img src="https://i.pravatar.cc/150?img=44" class="n-avatar">
+                        <div class="n-badge bg-follow">➕</div>
+                    </div>
+                    <div class="notif-text">
+                        <strong>Sarah Jenkins</strong> e outras 12 pessoas começaram a seguir você.
+                        <span class="notif-time">Há 45 minutos</span>
+                    </div>
+                    <div class="notif-context">
+                        <button class="btn-follow-sm">Seguir de volta</button>
+                    </div>
+                </div>
+
+                <div class="notif-card unread">
+                    <div class="avatar-wrapper">
+                        <div class="n-avatar" style="background:#8E2DE2; display:flex; align-items:center; justify-content:center; color:white; font-size:1.5rem;">🏆</div>
+                        <div class="n-badge bg-system">✨</div>
+                    </div>
+                    <div class="notif-text">
+                        Parabéns! Você desbloqueou a conquista <strong>Leitor Voraz</strong> por ler 7 dias seguidos.
+                        <span class="notif-time">Há 1 hora</span>
+                    </div>
+                </div>
+
+                <div class="time-group-label">Hoje</div>
+
+                <div class="notif-card">
+                    <div class="avatar-wrapper">
+                        <img src="https://i.pravatar.cc/150?img=5" class="n-avatar">
+                        <div class="n-badge bg-comment">💬</div>
+                    </div>
+                    <div class="notif-text">
+                        <strong>Marina Souza</strong> respondeu ao seu comentário: "Eu chorei nessa parte também! 😭"
+                        <span class="notif-time">5 horas atrás</span>
+                    </div>
+                    <div class="notif-context">
+                        <div class="context-book" style="background-image: url('https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=200');"></div>
+                    </div>
+                </div>
+
+                <div class="notif-card">
+                    <div class="avatar-wrapper">
+                        <img src="https://i.pravatar.cc/150?img=60" class="n-avatar">
+                        <div class="n-badge bg-system">📢</div>
+                    </div>
+                    <div class="notif-text">
+                        <strong>Admin</strong> postou um aviso no <strong>Clube do Terror</strong>: "A leitura do mês começa amanhã!"
+                        <span class="notif-time">8 horas atrás</span>
+                    </div>
+                </div>
+
+                 <div class="time-group-label">Ontem</div>
+
+                 <div class="notif-card">
+                    <div class="avatar-wrapper">
+                        <img src="https://i.pravatar.cc/150?img=33" class="n-avatar">
+                        <div class="n-badge bg-like">❤️</div>
+                    </div>
+                    <div class="notif-text">
+                        <strong>João</strong> curtiu seu comentário.
+                        <span class="notif-time">Ontem às 14:00</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <div id="feed" class="page-section"><h2>Feed</h2></div>
+            <div id="explore" class="page-section"><h2>Explorar</h2></div>
+            <div id="library" class="page-section"><h2>Biblioteca</h2></div>
+            <div id="write" class="page-section"><h2>Escrever</h2></div>
+            <div id="profile" class="page-section"><h2>Perfil</h2></div>
+
+        </main>
+    </div>
+
+    <script>
+        function nav(pageId, btn) {
+            document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            btn.classList.add('active');
+        }
+    </script>
+</body>
+</html>

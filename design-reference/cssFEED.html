@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BiblioVerse - Feed Premium</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CONFIGURAÇÕES GERAIS --- */
+        :root {
+            --brand-gradient: linear-gradient(135deg, #FF5F6D 0%, #FFC371 100%);
+            --primary-color: #FF5F6D;
+            --bg-body: #F0F2F5; 
+            --bg-surface: #FFFFFF;
+            --text-main: #1A202C; 
+            --text-muted: #718096;
+            --radius-lg: 24px;
+            --radius-md: 16px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: var(--bg-body); color: var(--text-main); height: 100vh; font-family: 'Inter', sans-serif; overflow: hidden; }
+        h1, h2, h3, h4 { font-family: 'Poppins', sans-serif; letter-spacing: -0.5px; }
+        ::-webkit-scrollbar { width: 0px; }
+
+        .app-container { display: grid; grid-template-columns: 260px 1fr; height: 100vh; }
+
+        /* --- SIDEBAR (Igual ao anterior) --- */
+        .sidebar { background-color: var(--bg-surface); padding: 40px 25px; display: flex; flex-direction: column; box-shadow: 5px 0 15px rgba(0,0,0,0.02); z-index: 10; }
+        .logo { font-family: 'Poppins', sans-serif; font-size: 1.6rem; font-weight: 800; background: var(--brand-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; margin-bottom: 50px; display: flex; align-items: center; gap: 8px; }
+        .menu-item { display: flex; align-items: center; padding: 14px 20px; text-decoration: none; color: var(--text-muted); font-weight: 600; border-radius: var(--radius-md); margin-bottom: 8px; transition: all 0.3s ease; cursor: pointer; font-family: 'Poppins', sans-serif; }
+        .menu-item:hover { background-color: #FFF5F5; color: var(--primary-color); transform: translateX(5px); }
+        .menu-item.active { background: var(--brand-gradient); color: white; box-shadow: 0 10px 20px rgba(255, 95, 109, 0.3); }
+        .menu-item span { margin-right: 15px; font-size: 1.3rem; }
+
+        /* --- CONTEÚDO --- */
+        .main-content { overflow-y: auto; position: relative; height: 100vh; padding: 0 40px; } /* Mais padding lateral */
+        .page-section { display: none; padding: 40px 0; max-width: 1100px; margin: 0 auto; animation: slideUp 0.5s cubic-bezier(0.25, 0.8, 0.25, 1); }
+        .page-section.active { display: block; } 
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- NOVO CSS DO FEED (AQUI ESTÁ A MÁGICA) --- */
+        .feed-layout { display: grid; grid-template-columns: 1fr 350px; gap: 50px; }
+
+        .feed-post { 
+            background: white; border-radius: var(--radius-lg); padding: 0; 
+            margin-bottom: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); 
+            transition: 0.3s; border: 1px solid rgba(0,0,0,0.02);
+            overflow: hidden;
+        }
+        .feed-post:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(255, 95, 109, 0.1); }
+
+        .post-top-bar { padding: 20px 25px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f7f7f7; }
+        .user-info { display: flex; align-items: center; gap: 15px; }
+        .user-avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .action-context { font-size: 0.85rem; color: var(--text-muted); }
+        
+        .post-body { padding: 25px; display: flex; gap: 30px; }
+        
+        /* Capa do Livro com estilo "Flutuante" */
+        .book-cover-3d { 
+            width: 110px; height: 165px; border-radius: 8px; flex-shrink: 0; 
+            box-shadow: -5px 5px 15px rgba(0,0,0,0.15), inset 0 0 10px rgba(0,0,0,0.1);
+            background-size: cover; background-position: center;
+            transform: rotateY(-10deg); /* Leve inclinação 3D */
+            transition: 0.3s;
+        }
+        .feed-post:hover .book-cover-3d { transform: rotateY(0deg) scale(1.02); }
+
+        .post-content { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+        
+        .tag-pill { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 10px; width: fit-content;}
+        .tag-fantasy { background: #E0E7FF; color: #4338CA; }
+        .tag-romance { background: #FFF1F2; color: #BE123C; }
+        .tag-horror { background: #374151; color: #F3F4F6; }
+
+        .stars { color: #F59E0B; font-size: 0.9rem; margin-bottom: 5px; }
+
+        .post-footer { 
+            padding: 15px 25px; background: #FAFAFA; 
+            display: flex; gap: 20px; align-items: center;
+        }
+        .interactive-btn { 
+            display: flex; align-items: center; gap: 8px; 
+            color: var(--text-muted); font-weight: 600; font-size: 0.9rem; 
+            cursor: pointer; transition: 0.2s; padding: 8px 12px; border-radius: 8px;
+        }
+        .interactive-btn:hover { background: #fff; color: var(--primary-color); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+
+        /* Trending Sidebar */
+        .trending-box { background: white; padding: 30px; border-radius: var(--radius-lg); position: sticky; top: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); }
+        .trend-item { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #f5f5f5; }
+        .follow-btn { border: none; background: var(--text-main); color: white; padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; cursor: pointer; transition:0.2s;}
+        .follow-btn:hover { background: var(--primary-color); transform: scale(1.05); }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <aside class="sidebar">
+            <div class="logo"><span>📚</span> BiblioVerse</div>
+            <nav>
+                <div class="menu-item active" onclick="nav('feed', this)"><span>🏠</span> Feed Social</div>
+                <div class="menu-item" onclick="nav('explore', this)"><span>🔍</span> Explorar</div>
+                <div class="menu-item" onclick="nav('library', this)"><span>📚</span> Biblioteca</div>
+                <div class="menu-item" onclick="nav('write', this)"><span>✒️</span> Escrever</div>
+                <div class="menu-item" onclick="nav('profile', this)"><span>👤</span> Perfil</div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            
+            <div id="feed" class="page-section active">
+                <div class="feed-layout">
+                    
+                    <div class="feed-column">
+                        <h2 style="margin-bottom: 30px; font-size: 2rem;">Seu Feed</h2>
+
+                        <div class="feed-post">
+                            <div class="post-top-bar">
+                                <div class="user-info">
+                                    <img src="https://i.pravatar.cc/150?img=32" class="user-avatar">
+                                    <div>
+                                        <h4 style="line-height:1;">Marina Souza</h4>
+                                        <span class="action-context">publicou o <strong>Capítulo 12</strong> • 2h atrás</span>
+                                    </div>
+                                </div>
+                                <span style="font-size:1.5rem;">🔥</span>
+                            </div>
+                            <div class="post-body">
+                                <div class="book-cover-3d" style="background-image: url('https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=300');"></div>
+                                
+                                <div class="post-content">
+                                    <span class="tag-pill tag-romance">ROMANCE DE ÉPOCA</span>
+                                    <h3 style="font-size: 1.4rem; margin: 8px 0 10px;">As Cartas que Não Enviei</h3>
+                                    <p style="color: #555; line-height: 1.6; margin-bottom: 15px;">
+                                        "Eliza segurou o envelope com as mãos trêmulas. A cera vermelha do selo real estava intacta, mas o peso daquele segredo parecia esmagá-la..."
+                                    </p>
+                                    <div style="font-size: 0.9rem; font-weight: 600; color: var(--primary-color);">Ler prévia gratuita →</div>
+                                </div>
+                            </div>
+                            <div class="post-footer">
+                                <div class="interactive-btn">❤️ 1.2k Curtidas</div>
+                                <div class="interactive-btn">💬 45 Comentários</div>
+                                <div class="interactive-btn" style="margin-left:auto">🔖 Salvar</div>
+                            </div>
+                        </div>
+
+                        <div class="feed-post">
+                            <div class="post-top-bar">
+                                <div class="user-info">
+                                    <img src="https://i.pravatar.cc/150?img=11" class="user-avatar">
+                                    <div>
+                                        <h4 style="line-height:1;">Carlos Lima</h4>
+                                        <span class="action-context">avaliou um livro • 5h atrás</span>
+                                    </div>
+                                </div>
+                                <div class="stars">★★★★★</div>
+                            </div>
+                            <div class="post-body">
+                                <div class="book-cover-3d" style="background-image: url('https://images.unsplash.com/photo-1629198688000-71f23e745b6e?auto=format&fit=crop&q=80&w=300');"></div>
+                                <div class="post-content">
+                                    <span class="tag-pill tag-fantasy">FICÇÃO CIENTÍFICA</span>
+                                    <h3 style="font-size: 1.4rem; margin: 8px 0 10px;">Duna</h3>
+                                    <p style="color: #555; line-height: 1.6; font-style: italic;">
+                                        "Absolutamente épico. Frank Herbert cria um universo tão denso que você sente a areia nos dentes. O desenvolvimento de Paul Atreides é uma obra-prima."
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="post-footer">
+                                <div class="interactive-btn">❤️ 340 Curtidas</div>
+                                <div class="interactive-btn">💬 Discutir</div>
+                                <div class="interactive-btn" style="margin-left:auto">📚 Adicionar à lista</div>
+                            </div>
+                        </div>
+
+                         <div class="feed-post">
+                            <div class="post-top-bar">
+                                <div class="user-info">
+                                    <img src="https://i.pravatar.cc/150?img=5" class="user-avatar">
+                                    <div>
+                                        <h4 style="line-height:1;">Ana Clara</h4>
+                                        <span class="action-context">atualizou o progresso • 10m atrás</span>
+                                    </div>
+                                </div>
+                                <span style="color:#10B981; font-weight:bold; font-size:0.8rem; background:#ECFDF5; padding:5px 10px; border-radius:10px;">LENDO</span>
+                            </div>
+                            <div class="post-body">
+                                <div class="book-cover-3d" style="background-image: url('https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=300');"></div>
+                                <div class="post-content">
+                                    <h3 style="font-size: 1.3rem; margin: 0 0 10px;">O Leitor</h3>
+                                    
+                                    <div style="background:#F3F4F6; height:8px; border-radius:5px; width:100%; margin-bottom:10px;">
+                                        <div style="background:var(--brand-gradient); height:100%; width:75%; border-radius:5px;"></div>
+                                    </div>
+                                    <div style="display:flex; justify-content:space-between; font-size:0.85rem; color:#666; font-weight:600;">
+                                        <span>75% Concluído</span>
+                                        <span>Página 140 de 210</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="post-footer">
+                                <div class="interactive-btn">👏 Incentivar</div>
+                                <div class="interactive-btn">💬 Comentar</div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="sidebar-right">
+                        <div class="trending-box">
+                            <h3 style="margin-bottom:20px;">Autores em Alta 🚀</h3>
+                            
+                            <div class="trend-item">
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <img src="https://i.pravatar.cc/150?img=60" style="width:40px; height:40px; border-radius:50%;">
+                                    <div><strong>Lia Block</strong><br><small style="color:#888">Fantasia</small></div>
+                                </div>
+                                <button class="follow-btn">Seguir</button>
+                            </div>
+
+                            <div class="trend-item">
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <img src="https://i.pravatar.cc/150?img=12" style="width:40px; height:40px; border-radius:50%;">
+                                    <div><strong>Danilo M.</strong><br><small style="color:#888">Terror</small></div>
+                                </div>
+                                <button class="follow-btn">Seguir</button>
+                            </div>
+
+                            <div style="margin-top:30px; padding:20px; background:linear-gradient(135deg, #667eea, #764ba2); color:white; border-radius:16px; text-align:center;">
+                                <h4>Desafio da Semana</h4>
+                                <p style="font-size:0.9rem; margin:10px 0; opacity:0.9;">Leia 50 páginas de um clássico.</p>
+                                <button style="background:white; color:#667eea; border:none; padding:8px 16px; border-radius:20px; font-weight:bold; cursor:pointer;">Aceitar</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div id="explore" class="page-section"><h2>Explorar</h2></div>
+            <div id="library" class="page-section"><h2>Biblioteca</h2></div>
+            <div id="write" class="page-section"><h2>Escrever</h2></div>
+            <div id="profile" class="page-section"><h2>Perfil</h2></div>
+
+        </main>
+    </div>
+
+    <script>
+        function nav(pageId, btn) {
+            document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            btn.classList.add('active');
+        }
+    </script>
+</body>
+</html>
