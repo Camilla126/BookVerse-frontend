@@ -30,5 +30,21 @@ export const usePostsStore = defineStore("posts", {
       this.posts.unshift(response.data);
       return response.data;
     },
+
+    async addComment(postId, content) {
+      const response = await api.post(`/api/v1/posts/${postId}/comments`, {
+        comment: { content },
+      });
+
+      const post = this.posts.find((item) => item.id === postId);
+      if (post) post.comments_count += 1;
+
+      return response.data;
+    },
+
+    incrementLikes(postId, delta) {
+      const post = this.posts.find((item) => item.id === postId);
+      if (post) post.likes_count += delta;
+    },
   },
 });
