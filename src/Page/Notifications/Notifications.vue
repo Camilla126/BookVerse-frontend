@@ -45,112 +45,130 @@
         </div>
 
         <div v-if="notif.context" class="flex-shrink-0">
-          <div
-            v-if="notif.context.type === 'book'"
-            class="context-book"
-            :style="{ backgroundImage: `url('${notif.context.cover}')` }"
-          ></div>
-          <button v-else-if="notif.context.type === 'follow-back'" class="btn btn-dark btn-sm rounded-pill">Seguir de volta</button>
+          <button v-if="notif.context.type === 'follow-back'" class="btn btn-dark btn-sm rounded-pill">Seguir de volta</button>
         </div>
       </div>
     </template>
+
+    <p v-if="notificationsStore.loading" class="text-secondary mt-4">Carregando notificações...</p>
+    <p v-else-if="notificationsStore.error" class="text-danger mt-4">{{ notificationsStore.error }}</p>
+    <p v-else-if="notificationsStore.notifications.length === 0" class="text-secondary mt-4">
+      Você ainda não tem notificações.
+    </p>
   </div>
 </template>
 
 <script>
+import { useNotificationsStore } from "../../stores/notifications";
+
+const KIND_META = {
+  like: { badgeClass: "bg-like", badgeIcon: "❤️", icon: "❤️", iconBg: "#EF4444" },
+  comment: { badgeClass: "bg-comment", badgeIcon: "💬", icon: "💬", iconBg: "#3B82F6" },
+  follow: { badgeClass: "bg-follow", badgeIcon: "➕", icon: "➕", iconBg: "#6366F1" },
+  achievement: { badgeClass: "bg-system", badgeIcon: "✨", icon: "🏆", iconBg: "#8E2DE2" },
+  system: { badgeClass: "bg-system", badgeIcon: "📢", icon: "📢", iconBg: "#64748B" },
+};
+
+function buildText(notification) {
+  const actorName = notification.actor?.name;
+
+  switch (notification.kind) {
+    case "like":
+      return `<strong>${actorName}</strong> curtiu seu conteúdo.`;
+    case "comment":
+      return `<strong>${actorName}</strong> comentou no seu post.`;
+    case "follow":
+      return `<strong>${actorName}</strong> começou a seguir você.`;
+    case "achievement":
+      return "Parabéns! Você desbloqueou uma nova conquista.";
+    default:
+      return "Você tem um novo aviso do sistema.";
+  }
+}
+
+function formatTime(createdAt) {
+  const date = new Date(createdAt);
+  const diffMs = Date.now() - date.getTime();
+  const diffMinutes = Math.floor(diffMs / 60000);
+
+  if (diffMinutes < 1) return "Agora mesmo";
+  if (diffMinutes < 60) return `Há ${diffMinutes} minuto${diffMinutes > 1 ? "s" : ""}`;
+  if (diffMinutes < 24 * 60) {
+    const hours = Math.floor(diffMinutes / 60);
+    return `${hours} hora${hours > 1 ? "s" : ""} atrás`;
+  }
+
+  return date.toLocaleDateString("pt-BR");
+}
+
+function groupLabel(notification) {
+  if (!notification.read) return "Novo";
+
+  const date = new Date(notification.created_at);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+
+  if (date.toDateString() === today.toDateString()) return "Hoje";
+  if (date.toDateString() === yesterday.toDateString()) return "Ontem";
+
+  return "Mais antigas";
+}
+
 export default {
   name: "Notifications",
   data() {
     return {
       activeFilter: "Todas",
       filters: ["Todas", "Menções", "Alertas"],
-      notifications: [
-        {
-          id: 1,
-          group: "Novo",
-          read: false,
-          avatar: "https://i.pravatar.cc/150?img=12",
-          badgeClass: "bg-like",
-          badgeIcon: "❤️",
-          text: "<strong>Danilo M.</strong> curtiu sua resenha sobre <strong>O Código da Vinci</strong>.",
-          time: "Há 5 minutos",
-          context: {
-            type: "book",
-            cover:
-              "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80&w=200",
-          },
-        },
-        {
-          id: 2,
-          group: "Novo",
-          read: false,
-          avatar: "https://i.pravatar.cc/150?img=44",
-          badgeClass: "bg-follow",
-          badgeIcon: "➕",
-          text: "<strong>Sarah Jenkins</strong> e outras 12 pessoas começaram a seguir você.",
-          time: "Há 45 minutos",
-          context: { type: "follow-back" },
-        },
-        {
-          id: 3,
-          group: "Novo",
-          read: false,
-          icon: "🏆",
-          iconBg: "#8E2DE2",
-          badgeClass: "bg-system",
-          badgeIcon: "✨",
-          text: "Parabéns! Você desbloqueou a conquista <strong>Leitor Voraz</strong> por ler 7 dias seguidos.",
-          time: "Há 1 hora",
-        },
-        {
-          id: 4,
-          group: "Hoje",
-          read: true,
-          avatar: "https://i.pravatar.cc/150?img=5",
-          badgeClass: "bg-comment",
-          badgeIcon: "💬",
-          text: '<strong>Marina Souza</strong> respondeu ao seu comentário: "Eu chorei nessa parte também! 😭"',
-          time: "5 horas atrás",
-          context: {
-            type: "book",
-            cover:
-              "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=200",
-          },
-        },
-        {
-          id: 5,
-          group: "Hoje",
-          read: true,
-          avatar: "https://i.pravatar.cc/150?img=60",
-          badgeClass: "bg-system",
-          badgeIcon: "📢",
-          text: '<strong>Admin</strong> postou um aviso no <strong>Clube do Terror</strong>: "A leitura do mês começa amanhã!"',
-          time: "8 horas atrás",
-        },
-        {
-          id: 6,
-          group: "Ontem",
-          read: true,
-          avatar: "https://i.pravatar.cc/150?img=33",
-          badgeClass: "bg-like",
-          badgeIcon: "❤️",
-          text: "<strong>João</strong> curtiu seu comentário.",
-          time: "Ontem às 14:00",
-        },
-      ],
     };
   },
   computed: {
+    notificationsStore() {
+      return useNotificationsStore();
+    },
+    filteredNotifications() {
+      const kindsByFilter = {
+        Menções: [ "like", "comment", "follow" ],
+        Alertas: [ "system", "achievement" ],
+      };
+      const kinds = kindsByFilter[this.activeFilter];
+
+      if (!kinds) return this.notificationsStore.notifications;
+
+      return this.notificationsStore.notifications.filter((notification) => kinds.includes(notification.kind));
+    },
+    viewModels() {
+      return this.filteredNotifications.map((notification) => {
+        const meta = KIND_META[notification.kind] ?? KIND_META.system;
+
+        return {
+          id: notification.id,
+          read: notification.read,
+          group: groupLabel(notification),
+          text: buildText(notification),
+          time: formatTime(notification.created_at),
+          icon: meta.icon,
+          iconBg: meta.iconBg,
+          badgeClass: meta.badgeClass,
+          badgeIcon: meta.badgeIcon,
+          context: notification.kind === "follow" ? { type: "follow-back" } : null,
+        };
+      });
+    },
     groupedNotifications() {
-      const order = ["Novo", "Hoje", "Ontem"];
+      const order = ["Novo", "Hoje", "Ontem", "Mais antigas"];
       return order
-        .map((label) => ({ label, items: this.notifications.filter((n) => n.group === label) }))
+        .map((label) => ({ label, items: this.viewModels.filter((n) => n.group === label) }))
         .filter((group) => group.items.length > 0);
     },
   },
+  created() {
+    this.notificationsStore.fetchAll();
+  },
   methods: {
     markAllRead() {
-      this.notifications.forEach((n) => (n.read = true));
+      this.notificationsStore.markAllRead();
     },
   },
 };
