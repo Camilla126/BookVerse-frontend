@@ -13,10 +13,21 @@
           </div>
         </div>
         <div class="d-flex gap-2 mb-2">
-          <button class="btn btn-outline-secondary rounded-pill fw-bold" @click="toggleEdit">
-            {{ editing ? "Cancelar" : "Editar Perfil" }}
+          <template v-if="isOwnProfile">
+            <button class="btn btn-outline-secondary rounded-pill fw-bold" @click="toggleEdit">
+              {{ editing ? "Cancelar" : "Editar Perfil" }}
+            </button>
+            <button class="btn btn-dark rounded-pill fw-bold">Compartilhar</button>
+          </template>
+          <button
+            v-else
+            class="btn rounded-pill fw-bold"
+            :class="isFollowing ? 'btn-outline-secondary' : 'btn-dark'"
+            :disabled="followBusy"
+            @click="toggleFollow"
+          >
+            {{ isFollowing ? "Seguindo" : "Seguir" }}
           </button>
-          <button class="btn btn-dark rounded-pill fw-bold">Compartilhar</button>
         </div>
       </div>
 
@@ -93,7 +104,10 @@
           </li>
         </ul>
 
-        <p v-if="storiesStore.loading" class="text-secondary">Carregando obras...</p>
+        <p v-if="!isOwnProfile" class="text-secondary">
+          Ainda não é possível ver as obras de outros usuários por aqui.
+        </p>
+        <p v-else-if="storiesStore.loading" class="text-secondary">Carregando obras...</p>
         <p v-else-if="works.length === 0" class="text-secondary">Nenhuma obra ainda.</p>
 
         <div v-else class="row row-cols-2 row-cols-md-3 g-3">
@@ -136,6 +150,8 @@
 <script>
 import { useProfileStore } from "../../stores/profile";
 import { useStoriesStore } from "../../stores/stories";
+import { useFollowStore } from "../../stores/follow";
+import { useAuthStore } from "../../stores/auth";
 
 export default {
   name: "Profile",
@@ -145,6 +161,8 @@ export default {
       tabs: ["Minhas Histórias", "Listas de Leitura", "Atividade", "Sobre"],
       editing: false,
       editForm: { handle: "", bio: "", location: "", website: "" },
+      isFollowing: false,
+      followBusy: false,
     };
   },
   computed: {
@@ -154,8 +172,17 @@ export default {
     storiesStore() {
       return useStoriesStore();
     },
+    followStore() {
+      return useFollowStore();
+    },
+    authStore() {
+      return useAuthStore();
+    },
     profile() {
       return this.profileStore.profile;
+    },
+    isOwnProfile() {
+      return !this.$route.params.handle;
     },
     joinedLabel() {
       const date = new Date(this.profile.created_at);
@@ -176,14 +203,31 @@ export default {
       }));
     },
     works() {
-      return this.storiesStore.stories;
+      return this.isOwnProfile ? this.storiesStore.stories : [];
     },
   },
   created() {
-    this.profileStore.fetchOwnProfile();
-    this.storiesStore.fetchStories();
+    this.loadProfile();
+  },
+  watch: {
+    "$route.params.handle"() {
+      this.loadProfile();
+    },
   },
   methods: {
+    async loadProfile() {
+      if (this.isOwnProfile) {
+        await this.profileStore.fetchOwnProfile();
+        this.storiesStore.fetchStories();
+        return;
+      }
+
+      await this.profileStore.fetchPublicProfile(this.$route.params.handle);
+      if (this.profile) {
+        const followers = await this.followStore.fetchFollowers(this.profile.id);
+        this.isFollowing = followers.some((follower) => follower.id === this.authStore.user?.id);
+      }
+    },
     toggleEdit() {
       if (!this.editing) {
         this.editForm = {
@@ -201,6 +245,22 @@ export default {
         this.editing = false;
       } catch (error) {
         alert(error.response?.data?.errors?.join(", ") || "Não foi possível salvar o perfil.");
+      }
+    },
+    async toggleFollow() {
+      this.followBusy = true;
+      try {
+        if (this.isFollowing) {
+          await this.followStore.unfollow(this.profile.id);
+          this.isFollowing = false;
+          this.profile.stats.followers -= 1;
+        } else {
+          await this.followStore.follow(this.profile.id);
+          this.isFollowing = true;
+          this.profile.stats.followers += 1;
+        }
+      } finally {
+        this.followBusy = false;
       }
     },
   },

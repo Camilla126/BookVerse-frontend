@@ -36,6 +36,7 @@ const routes = [
             { path: 'library', component: Library },
             { path: 'write', component: Write },
             { path: 'profile', component: Profile },
+            { path: 'profile/:handle', component: Profile },
             { path: 'notifications', component: Notifications },
         ]
     }
