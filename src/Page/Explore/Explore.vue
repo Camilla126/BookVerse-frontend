@@ -16,8 +16,9 @@
             class="form-control border-0"
             v-model="searchQuery"
             placeholder="Títulos, autores, gêneros ou tags..."
+            @keyup.enter="runSearch"
           />
-          <button class="btn btn-dark px-4">Buscar</button>
+          <button class="btn btn-dark px-4" @click="runSearch">Buscar</button>
         </div>
 
         <div class="d-flex gap-2 justify-content-center flex-wrap mt-4">
@@ -36,7 +37,12 @@
 
     <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-3 mb-5">
       <div v-for="genre in genres" :key="genre.name" class="col">
-        <div class="genre-card rounded-4 p-3 text-white shadow d-flex flex-column justify-content-between" :class="genre.class">
+        <div
+          class="genre-card rounded-4 p-3 text-white shadow d-flex flex-column justify-content-between"
+          :class="genre.class"
+          role="button"
+          @click="filterByGenre(genre.name)"
+        >
           <span class="fw-bold fs-6">{{ genre.name }}</span>
           <span class="fs-3 align-self-end opacity-75">{{ genre.icon }}</span>
         </div>
@@ -44,21 +50,27 @@
     </div>
 
     <div class="d-flex justify-content-between align-items-end mb-4 mt-5">
-      <h2 class="fw-bold">Top 3 da Semana</h2>
-      <span class="text-secondary small">Brasil 🇧🇷</span>
+      <h2 class="fw-bold">{{ activeGenre ? `Gênero: ${activeGenre}` : "Catálogo" }}</h2>
+      <button v-if="activeGenre || searchQuery" class="btn btn-link btn-sm text-decoration-none" @click="clearFilters">
+        Limpar filtros
+      </button>
     </div>
 
-    <div class="d-flex gap-4 overflow-auto pb-3 mb-5 ranking-container">
-      <div v-for="(book, i) in ranking" :key="book.title" class="position-relative rank-item">
+    <p v-if="booksStore.loading" class="text-secondary">Carregando livros...</p>
+    <p v-else-if="booksStore.error" class="text-danger">{{ booksStore.error }}</p>
+    <p v-else-if="booksStore.books.length === 0" class="text-secondary">Nenhum livro encontrado.</p>
+
+    <div v-else class="d-flex gap-4 overflow-auto pb-3 mb-5 ranking-container">
+      <div v-for="(book, i) in booksStore.books" :key="book.id" class="position-relative rank-item">
         <div class="rank-number" :style="i === 0 ? { color: 'rgba(255, 215, 0, 0.4)', WebkitTextStroke: 0 } : {}">
           {{ i + 1 }}
         </div>
         <div class="card border-0 shadow-sm rounded-4 p-3 d-flex flex-row gap-3 align-items-center position-relative rank-card">
-          <div class="rank-cover flex-shrink-0" :style="{ backgroundImage: `url('${book.cover}')` }"></div>
+          <div class="rank-cover flex-shrink-0" :style="{ backgroundImage: `url('${book.cover_url}')` }"></div>
           <div>
             <h4 class="fs-6 fw-bold mb-1">{{ book.title }}</h4>
             <span class="small text-secondary">{{ book.author }}</span>
-            <span class="d-block small fw-bold mt-1" style="color: #10B981">{{ book.trend }}</span>
+            <span v-if="book.genre" class="d-block small fw-bold mt-1" style="color: #10B981">{{ book.genre }}</span>
           </div>
         </div>
       </div>
@@ -80,11 +92,14 @@
 </template>
 
 <script>
+import { useBooksStore } from "../../stores/books";
+
 export default {
   name: "Explore",
   data() {
     return {
       searchQuery: "",
+      activeGenre: "",
       trends: ["🔥 #RomanceDark", "🚀 #Cyberpunk", "🏆 #VencedoresWattys"],
       genres: [
         { name: "Romance", icon: "💘", class: "g-romance" },
@@ -93,29 +108,6 @@ export default {
         { name: "Terror", icon: "👻", class: "g-horror" },
         { name: "Suspense", icon: "🕵️", class: "g-thriller" },
       ],
-      ranking: [
-        {
-          title: "Duna",
-          author: "Frank Herbert",
-          trend: "🔥 +15% leituras",
-          cover:
-            "https://images.unsplash.com/photo-1629198688000-71f23e745b6e?auto=format&fit=crop&q=80&w=200",
-        },
-        {
-          title: "O Leitor",
-          author: "Bernhard Schlink",
-          trend: "📈 Em alta",
-          cover:
-            "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=200",
-        },
-        {
-          title: "1984",
-          author: "George Orwell",
-          trend: "🟢 Estável",
-          cover:
-            "https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&q=80&w=200",
-        },
-      ],
       authors: [
         { name: "Marina Souza", genre: "Romance Histórico", avatar: "https://i.pravatar.cc/150?img=32" },
         { name: "Carlos Lima", genre: "Cyberpunk", avatar: "https://i.pravatar.cc/150?img=11" },
@@ -123,6 +115,30 @@ export default {
         { name: "John Doe", genre: "Mistério", avatar: "https://i.pravatar.cc/150?img=59" },
       ],
     };
+  },
+  computed: {
+    booksStore() {
+      return useBooksStore();
+    },
+  },
+  created() {
+    this.booksStore.search();
+  },
+  methods: {
+    runSearch() {
+      this.activeGenre = "";
+      this.booksStore.search({ q: this.searchQuery });
+    },
+    filterByGenre(genre) {
+      this.searchQuery = "";
+      this.activeGenre = genre;
+      this.booksStore.search({ genre });
+    },
+    clearFilters() {
+      this.searchQuery = "";
+      this.activeGenre = "";
+      this.booksStore.search();
+    },
   },
 };
 </script>
