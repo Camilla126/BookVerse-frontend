@@ -1,22 +1,45 @@
 <template>
-  <div class="profile-page py-4">
+  <div class="profile-page py-4" v-if="profileStore.profile">
     <div class="card border-0 rounded-4 shadow-sm overflow-hidden mb-4">
-      <div class="profile-cover" :style="{ backgroundImage: `url('${profile.cover}')` }"></div>
+      <div class="profile-cover" :style="{ backgroundImage: `url('${profile.cover_url}')` }"></div>
       <div class="d-flex justify-content-between align-items-end px-4 pb-4 profile-info-bar">
         <div class="d-flex align-items-end gap-3">
-          <img :src="profile.avatar" class="rounded-circle profile-avatar-lg" />
+          <img :src="profile.avatar_url" class="rounded-circle profile-avatar-lg" />
           <div class="mb-2">
-            <h1 class="fs-2 fw-bold mb-1 d-flex align-items-center gap-2">
-              {{ profile.name }}
-              <span v-if="profile.verified" class="text-primary fs-5" title="Autor Verificado">✔</span>
-            </h1>
-            <p class="text-secondary fs-6 mb-0">{{ profile.handle }} • {{ profile.location }}</p>
+            <h1 class="fs-2 fw-bold mb-1">{{ profile.name }}</h1>
+            <p class="text-secondary fs-6 mb-0">
+              <span v-if="profile.handle">@{{ profile.handle }} • </span>{{ profile.location }}
+            </p>
           </div>
         </div>
         <div class="d-flex gap-2 mb-2">
-          <button class="btn btn-outline-secondary rounded-pill fw-bold">Editar Perfil</button>
+          <button class="btn btn-outline-secondary rounded-pill fw-bold" @click="toggleEdit">
+            {{ editing ? "Cancelar" : "Editar Perfil" }}
+          </button>
           <button class="btn btn-dark rounded-pill fw-bold">Compartilhar</button>
         </div>
+      </div>
+
+      <div v-if="editing" class="p-4 border-top">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label fw-semibold small">Handle</label>
+            <input type="text" class="form-control" v-model="editForm.handle" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold small">Localização</label>
+            <input type="text" class="form-control" v-model="editForm.location" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold small">Site</label>
+            <input type="text" class="form-control" v-model="editForm.website" />
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold small">Bio</label>
+            <textarea class="form-control" v-model="editForm.bio"></textarea>
+          </div>
+        </div>
+        <button class="btn btn-dark rounded-pill fw-bold mt-3" @click="saveProfile">Salvar</button>
       </div>
     </div>
 
@@ -26,11 +49,11 @@
           <div class="text-uppercase small fw-bold text-secondary mb-3">Sobre</div>
           <p class="text-secondary mb-3">{{ profile.bio }}</p>
 
-          <div class="d-flex align-items-center gap-2 text-secondary small mb-2">
+          <div v-if="profile.website" class="d-flex align-items-center gap-2 text-secondary small mb-2">
             <span>🔗</span> <a href="#" class="text-decoration-none" style="color: var(--primary-color)">{{ profile.website }}</a>
           </div>
           <div class="d-flex align-items-center gap-2 text-secondary small mb-2">
-            <span>🎂</span> {{ profile.joined }}
+            <span>🎂</span> {{ joinedLabel }}
           </div>
 
           <div class="d-flex justify-content-between py-3 border-top border-bottom my-3">
@@ -43,15 +66,12 @@
 
         <div class="card border-0 shadow-sm rounded-4 p-4">
           <div class="text-uppercase small fw-bold text-secondary mb-3">
-            Conquistas ({{ badges.filter((b) => !b.locked).length }})
+            Conquistas ({{ badges.length }})
           </div>
-          <div class="row row-cols-3 g-2">
-            <div v-for="badge in badges" :key="badge.icon" class="col">
-              <div
-                class="bg-light rounded-3 p-2 text-center fs-4 badge-slot"
-                :style="badge.locked ? { opacity: 0.3 } : {}"
-                :title="badge.locked ? '' : badge.title"
-              >
+          <p v-if="badges.length === 0" class="text-secondary small">Nenhuma conquista desbloqueada ainda.</p>
+          <div v-else class="row row-cols-3 g-2">
+            <div v-for="badge in badges" :key="badge.id" class="col">
+              <div class="bg-light rounded-3 p-2 text-center fs-4 badge-slot" :title="badge.title">
                 {{ badge.icon }}
               </div>
             </div>
@@ -73,21 +93,24 @@
           </li>
         </ul>
 
-        <div class="row row-cols-2 row-cols-md-3 g-3">
-          <div v-for="work in works" :key="work.title" class="col">
+        <p v-if="storiesStore.loading" class="text-secondary">Carregando obras...</p>
+        <p v-else-if="works.length === 0" class="text-secondary">Nenhuma obra ainda.</p>
+
+        <div v-else class="row row-cols-2 row-cols-md-3 g-3">
+          <div v-for="work in works" :key="work.id" class="col">
             <div class="card border-0 shadow-sm rounded-3 overflow-hidden h-100 my-work-card">
-              <div class="work-cover" :style="{ backgroundImage: `url('${work.cover}')` }">
-                <span class="badge rounded-pill position-absolute top-0 end-0 m-2 text-white" :style="{ background: work.statusColor }">
-                  {{ work.status }}
+              <div class="work-cover" :style="{ backgroundImage: `url('${work.cover_url}')` }">
+                <span
+                  class="badge rounded-pill position-absolute top-0 end-0 m-2 text-white"
+                  :style="{ background: work.status === 'published' ? '#10B981' : '#F59E0B' }"
+                >
+                  {{ work.status === "published" ? "PUBLICADO" : "RASCUNHO" }}
                 </span>
               </div>
               <div class="p-3">
                 <h4 class="fw-bold text-truncate fs-6">{{ work.title }}</h4>
-                <p class="small text-secondary">{{ work.description }}</p>
                 <div class="d-flex gap-3 text-secondary small mt-2">
-                  <span>👁️ {{ work.views }}</span>
-                  <span>⭐ {{ work.rating }}</span>
-                  <span>📄 {{ work.chapters }}</span>
+                  <span>📄 {{ work.chapters.length }} Caps</span>
                 </div>
               </div>
             </div>
@@ -103,76 +126,83 @@
       </div>
     </div>
   </div>
+
+  <div v-else class="py-4">
+    <p v-if="profileStore.loading" class="text-secondary">Carregando perfil...</p>
+    <p v-else-if="profileStore.error" class="text-danger">{{ profileStore.error }}</p>
+  </div>
 </template>
 
 <script>
+import { useProfileStore } from "../../stores/profile";
+import { useStoriesStore } from "../../stores/stories";
+
 export default {
   name: "Profile",
   data() {
     return {
       activeTab: "Minhas Histórias",
       tabs: ["Minhas Histórias", "Listas de Leitura", "Atividade", "Sobre"],
-      profile: {
-        name: "Alexandre Lemos",
-        verified: true,
-        handle: "@alex_lemos",
-        location: "São Paulo, BR",
-        bio: "Escritor de Fantasia Sombria e Sci-Fi. Amo café, dias chuvosos e criar mundos onde a magia tem um preço alto. 🖋️✨",
-        website: "alexlemos.com",
-        joined: "Entrou em Jan 2024",
-        avatar: "https://i.pravatar.cc/300?img=12",
-        cover:
-          "https://images.unsplash.com/photo-1507842217153-e21f2010dc6f?auto=format&fit=crop&q=80&w=1200",
-      },
-      stats: [
-        { label: "Seguidores", value: "12.5k" },
-        { label: "Seguindo", value: "450" },
-        { label: "Obras", value: "82" },
-      ],
-      badges: [
-        { icon: "🏆", title: "Autor Best-Seller" },
-        { icon: "🎂", title: "1 Ano de Casa" },
-        { icon: "📚", title: "Leitor Voraz" },
-        { icon: "🔥", title: "Maratonista" },
-        { icon: "⭐", title: "Popular" },
-        { icon: "🔒", locked: true },
-      ],
-      works: [
-        {
-          title: "A Sombra do Passado",
-          description: "Um mistério antigo desperta em uma cidade esquecida...",
-          status: "EM ANDAMENTO",
-          statusColor: "#F59E0B",
-          views: "12k",
-          rating: "4.8",
-          chapters: "12 Caps",
-          cover:
-            "https://images.unsplash.com/photo-1516414447581-b21d006433ae?auto=format&fit=crop&q=80&w=400",
-        },
-        {
-          title: "Cyber Punk 2099",
-          description: "Neon, chuva e traição no submundo digital.",
-          status: "CONCLUÍDO",
-          statusColor: "#10B981",
-          views: "45k",
-          rating: "4.9",
-          chapters: "34 Caps",
-          cover:
-            "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&q=80&w=400",
-        },
-        {
-          title: "Crônicas de Areia",
-          description: "Uma jornada épica pelo deserto infinito.",
-          status: "CONCLUÍDO",
-          statusColor: "#10B981",
-          views: "8.2k",
-          rating: "4.5",
-          chapters: "20 Caps",
-          cover:
-            "https://images.unsplash.com/photo-1629198688000-71f23e745b6e?auto=format&fit=crop&q=80&w=400",
-        },
-      ],
+      editing: false,
+      editForm: { handle: "", bio: "", location: "", website: "" },
     };
+  },
+  computed: {
+    profileStore() {
+      return useProfileStore();
+    },
+    storiesStore() {
+      return useStoriesStore();
+    },
+    profile() {
+      return this.profileStore.profile;
+    },
+    joinedLabel() {
+      const date = new Date(this.profile.created_at);
+      return `Entrou em ${date.toLocaleDateString("pt-BR", { month: "short", year: "numeric" })}`;
+    },
+    stats() {
+      return [
+        { label: "Seguidores", value: this.profile.stats.followers },
+        { label: "Seguindo", value: this.profile.stats.following },
+        { label: "Obras", value: this.profile.stats.stories },
+      ];
+    },
+    badges() {
+      return this.profile.achievements.map((achievement) => ({
+        id: achievement.id,
+        icon: achievement.icon,
+        title: achievement.name,
+      }));
+    },
+    works() {
+      return this.storiesStore.stories;
+    },
+  },
+  created() {
+    this.profileStore.fetchOwnProfile();
+    this.storiesStore.fetchStories();
+  },
+  methods: {
+    toggleEdit() {
+      if (!this.editing) {
+        this.editForm = {
+          handle: this.profile.handle || "",
+          bio: this.profile.bio || "",
+          location: this.profile.location || "",
+          website: this.profile.website || "",
+        };
+      }
+      this.editing = !this.editing;
+    },
+    async saveProfile() {
+      try {
+        await this.profileStore.updateOwnProfile(this.editForm);
+        this.editing = false;
+      } catch (error) {
+        alert(error.response?.data?.errors?.join(", ") || "Não foi possível salvar o perfil.");
+      }
+    },
   },
 };
 </script>
