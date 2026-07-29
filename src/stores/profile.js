@@ -28,5 +28,19 @@ export const useProfileStore = defineStore("profile", {
       this.profile = response.data;
       return response.data;
     },
+
+    async fetchPublicProfile(handle) {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        const response = await api.get(`/api/v1/profiles/${handle}`);
+        this.profile = response.data;
+      } catch {
+        this.error = "Perfil não encontrado.";
+      } finally {
+        this.loading = false;
+      }
+    },
   },
 });
